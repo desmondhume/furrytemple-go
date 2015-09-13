@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/desmondhume/furrytemple/job"
 	_ "github.com/lib/pq"
 	"google.golang.org/api/youtube/v3"
 	"io/ioutil"
@@ -28,12 +29,12 @@ func insertVideo(video *youtube.SearchResult) error {
 	var lastInsertedYoutubeId string
 
 	err := db.QueryRow(`
-		INSERT INTO videos(youtube_id, url, thumbnail_url, title)
-		SELECT $1, $2, $3, $4
-		WHERE NOT EXISTS (
-			SELECT id FROM videos
-			WHERE youtube_id = $5
-		) returning youtube_id;`,
+    INSERT INTO videos(youtube_id, url, thumbnail_url, title)
+    SELECT $1, $2, $3, $4
+    WHERE NOT EXISTS (
+      SELECT id FROM videos
+      WHERE youtube_id = $5
+    ) returning youtube_id;`,
 		video.Id.VideoId, fmt.Sprintf("%s%s", YOUTUBE_BASE_URL, video.Id.VideoId), video.Snippet.Thumbnails.Medium.Url, video.Snippet.Title, video.Id.VideoId,
 	).Scan(&lastInsertedYoutubeId)
 
@@ -88,30 +89,30 @@ func Export() error {
 		rows, _ := stmt.Query()
 
 		head := `<!DOCTYPE html>
-		<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-				<title>Furry Temple</title>
-				<link rel="stylesheet" href="style.css" />
-			</head>
-			<body>
-				<header>
-					<div class="banner">Banner here</div>
-					<div class="logo">FURRY TEMPLE</div>
-					<div class="banner">Banner here</div>
-				</header>
-				<div class="tagline">100 cat videos/hour</div>
-			`
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>Furry Temple</title>
+        <link rel="stylesheet" href="style.css" />
+      </head>
+      <body>
+        <header>
+          <div class="banner">Banner here</div>
+          <div class="logo">FURRY TEMPLE</div>
+          <div class="banner">Banner here</div>
+        </header>
+        <div class="tagline">100 cat videos/hour</div>
+      `
 		ga := fmt.Sprintf(`<script>
-			  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-			  ga('create', '%s', 'auto');
-			  ga('send', 'pageview');
+        ga('create', '%s', 'auto');
+        ga('send', 'pageview');
 
-			</script>`, GA_CODE)
+      </script>`, GA_CODE)
 
 		_, err = file.WriteString(head)
 		_, err = file.WriteString(ga)
@@ -146,7 +147,7 @@ func Export() error {
 	return err
 }
 
-func Exec(command string, input chan map[string]interface{}, output chan map[string]string) {
+func Exec(command string, input chan map[string]interface{}, output job.Reports) {
 	var err error
 
 	for data := range input {
@@ -163,12 +164,11 @@ func Exec(command string, input chan map[string]interface{}, output chan map[str
 		}
 
 		// defer func() {
-		// 	fmt.Println(err)
-		// 	fmt.Println("Exiting...")
+		//  fmt.Println(err)
+		//  fmt.Println("Exiting...")
 		// }()
 
-		job := map[string]string{"status": "OK", "message": "Everything worked."}
-		output <- job
+		output <- job.JobReport{"OK", "Everything worked."}
 	}
 }
 

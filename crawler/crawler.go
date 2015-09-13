@@ -11,12 +11,12 @@ import (
 )
 
 var (
-	service *youtube.Service
+	service      *youtube.Service
+	developerKey = os.Getenv("YOUTUBE_DEVELOPER_KEY")
 )
 
 const (
-	developerKey = os.Getenv("YOUTUBE_DEVELOPER_KEY")
-	maxResults   = 25
+	maxResults = 25
 )
 
 func createService() (*youtube.Service, error) {

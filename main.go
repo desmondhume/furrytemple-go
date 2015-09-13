@@ -1,7 +1,8 @@
 package main
 
 import (
-	videoFetch "github.com/desmondhume/furrytemple/jobs/videos/fetch"
+	"github.com/desmondhume/furrytemple/job"
+	videoFetch "github.com/desmondhume/furrytemple/job/videos/fetch"
 )
 
 // Structure of parser and normalizer
@@ -19,10 +20,8 @@ import (
 
 func main() {
 	output := make(chan map[string]interface{})
-	jobsReports := make(chan map[string]string)
+	jobsReports := make(chan job.JobReport)
 
 	videoFetch.Run(output, jobsReports)
-
-	// carpenter.Export()
 	return
 }
