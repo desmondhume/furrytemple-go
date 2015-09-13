@@ -12,7 +12,7 @@ import (
 
 var (
 	service      *youtube.Service
-	developerKey = os.Getenv("YOUTUBE_DEVELOPER_KEY")
+	developerKey = os.Getenv("FURRYTEMPLE_YOUTUBE_DEVELOPER_KEY")
 )
 
 const (
